@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ro" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SwiftDrop P2P — Transfer Nelimitat</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PeerJS pentru conexiune directa P2P fara limita de GB -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- QRious pentru generare QR Code -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top right, #1e1b4b, #09090b 60%);
+      min-height: 100vh;
+      color: #f4f4f5;
+    }
+    .glass {
+      background: rgba(24, 24, 27, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .drop-active {
+      border-color: #6366f1 !important;
+      background: rgba(99, 102, 241, 0.12) !important;
+      transform: scale(1.01);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+  </style>
+</head>
+<body class="antialiased selection:bg-indigo-500 selection:text-white pb-12">
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-30 glass border-b border-white/10">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg tracking-tight leading-none">SwiftDrop <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">NELIMITAT</span></h1>
+          <p class="text-xs text-zinc-400 mt-1">Transfer direct PC ↔ Telefon (Video, Muzică, Fișiere)</p>
+        </div>
+      </div>
+
+      <!-- Status Conexiune -->
+      <div id="statusBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+        <span id="statusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="statusText">Se generează codul...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- COLOANA STÂNGA: Conectare + Upload WeTransfer Style -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- Card Conectare Dispozitive -->
+      <section class="glass rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+            <i data-lucide="smartphone" class="w-4 h-4 text-indigo-400"></i>
+            1. Conectează Dispozitivele
+          </h2>
+          <button id="toggleQrBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium transition">
+            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Arată QR
+          </button>
+        </div>
+
+        <!-- Codul Meu -->
+        <div class="bg-zinc-900/90 border border-white/10 rounded-xl p-3.5 flex items-center justify-between mb-4">
+          <div>
+            <span class="text-xs text-zinc-400 block">Codul acestui dispozitiv:</span>
+            <span id="myCodeDisplay" class="text-2xl font-bold tracking-widest text-white font-mono">----</span>
+          </div>
+          <div class="flex gap-2">
+            <button id="copyCodeBtn" title="Copiază Codul" class="p-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+            </button>
+            <button id="copyLinkBtn" title="Copiază Link Direct" class="px-3 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-medium flex items-center gap-1.5 transition">
+              <i data-lucide="link" class="w-3.5 h-3.5"></i> Link
+            </button>
+          </div>
+        </div>
+
+        <!-- Zona QR Code (Ascunsa initial) -->
+        <div id="qrContainer" class="hidden flex-col items-center justify-center bg-white p-4 rounded-xl mb-4 transition-all">
+          <canvas id="qrCanvas" class="w-40 h-40"></canvas>
+          <p class="text-xs text-zinc-800 font-medium mt-2 text-center">Scanează cu camera telefonului pentru conectare automată</p>
+        </div>
+
+        <!-- Conectare la alt cod -->
+        <div id="connectForm" class="flex gap-2">
+          <input 
+            id="remoteCodeInput" 
+            type="text" 
+            maxlength="4" 
+            placeholder="Introdu codul de 4 cifre..." 
+            class="w-full bg-zinc-900/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 font-mono tracking-wider uppercase"
+          />
+          <button 
+            id="connectBtn" 
+            class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-sm transition flex items-center gap-1.5 shrink-0 shadow-lg shadow-indigo-600/25">
+            <span>Conectează</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Info conectat -->
+        <div id="connectedInfo" class="hidden mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+            <div class="text-xs">
+              <p class="font-semibold text-emerald-300">Legătură directă activă!</p>
+              <p id="peerConnectedId" class="text-emerald-400/80">Conectat cu dispozitivul pereche</p>
+            </div>
+          </div>
+          <button id="disconnectBtn" class="text-xs px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition">
+            Deconectează
+          </button>
+        </div>
+      </section>
+
+      <!-- Card Trimite Fisiere (WeTransfer Box) -->
+      <section class="glass rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+            <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-400"></i>
+            2. Adaugă Fișiere
+          </h2>
+          <span id="queueCounter" class="text-xs text-zinc-400">0 selectate</span>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <label 
+          id="dropZone" 
+          for="fileInput" 
+          class="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-indigo-500 rounded-2xl p-7 flex flex-col items-center justify-center text-center transition-all duration-200 bg-zinc-900/40 group">
+          <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <i data-lucide="plus" class="w-7 h-7 text-indigo-400"></i>
+          </div>
+          <p class="text-sm font-semibold text-zinc-200">Apasă sau trage fișierele aici</p>
+          <p class="text-xs text-zinc-400 mt-1">Video 4K, Muzică MP3/WAV, Poze, Arhive — Fără limită de GB</p>
+          <input id="fileInput" type="file" multiple class="hidden" />
+        </label>
+
+        <!-- Lista fisiere in asteptare pentru trimitere -->
+        <div id="stagingList" class="mt-4 space-y-2 max-h-52 overflow-y-auto hidden"></div>
+
+        <!-- Progres Transfer Activ -->
+        <div id="transferProgressBox" class="hidden mt-4 p-3.5 rounded-xl bg-zinc-900/90 border border-white/10">
+          <div class="flex justify-between items-center text-xs mb-1.5">
+            <span id="transferFileName" class="font-medium text-zinc-200 truncate max-w-[70%]">Se transferă...</span>
+            <span id="transferSpeed" class="text-indigo-400 font-mono">0%</span>
+          </div>
+          <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div id="transferProgressBar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 w-0 transition-all duration-150"></div>
+          </div>
+        </div>
+
+        <!-- Buton Trimite -->
+        <button 
+          id="sendAllBtn" 
+          disabled
+          class="w-full mt-4 py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white font-semibold text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>Trimite Fișierele Acum</span>
+        </button>
+      </section>
+
+    </div>
+
+    <!-- COLOANA DREAPTA: Fisiere Primite & Trimise (Organizate pe Categorii) -->
+    <div class="lg:col-span-7">
+      <section class="glass rounded-2xl p-5 shadow-xl min-h-[540px] flex flex-col">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="folder-kanban" class="w-5 h-5 text-indigo-400"></i>
+              Fișiere Transferate & Organizate
+            </h2>
+            <p class="text-xs text-zinc-400 mt-0.5">Descărcări nelimitate, sortate automat după tipul fișierului</p>
+          </div>
+
+          <button id="downloadAllBtn" class="hidden px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition self-start sm:self-auto">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Descarcă Tot (<span id="totalReceivedCount">0</span>)
+          </button>
+        </div>
+
+        <!-- Categorii / Tabs -->
+        <div class="flex items-center gap-1.5 overflow-x-auto py-3 no-scrollbar border-b border-white/5">
+          <button data-tab="all" class="tab-btn active-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i> Toate <span id="count-all" class="px-1.5 py-0.2 bg-black/20 rounded-full text-[10px]">0</span>
+          </button>
+          <button data-tab="video" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="film" class="w-3.5 h-3.5 text-rose-400"></i> Video <span id="count-video" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
+          </button>
+          <button data-tab="audio" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="music" class="w-3.5 h-3.5 text-amber-400"></i> Muzică <span id="count-audio" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
+          </button>
+          <button data-tab="image" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-400"></i> Imagini <span id="count-image" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
+          </button>
+          <button data-tab="other" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="file-archive" class="w-3.5 h-3.5 text-sky-400"></i> Altele <span id="count-other" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyVault" class="flex-1 flex flex-col items-center justify-center text-center py-14 px-4">
+          <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mb-3 text-zinc-600">
+            <i data-lucide="inbox" class="w-8 h-8"></i>
+          </div>
+          <p class="text-sm font-medium text-zinc-300">Niciun fișier transferat încă</p>
+          <p class="text-xs text-zinc-500 max-w-xs mt-1">Conectează laptopul și telefonul folosind codul de 4 cifre, apoi trimite videoclipuri sau muzică.</p>
+        </div>
+
+        <!-- Lista Fisiere Sortate -->
+        <div id="filesGrid" class="mt-4 space-y-3 overflow-y-auto flex-1 hidden pr-1"></div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="glass px-4 py-3 rounded-xl shadow-2xl border border-indigo-500/30 flex items-center gap-2.5 text-xs font-medium text-white">
+      <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+      <span id="toastMsg">Notificare</span>
+    </div>
+  </div>
+
+  <script>
+    // Inițializare iconițe
+    lucide.createIcons();
+
+    // --- CONSTANTE & STATE ---
+    const APP_PREFIX = 'swiftdrop-ro-v1-';
+    const CHUNK_SIZE = 64 * 1024; // 64KB per chunk pentru viteza maxima si stabilitate WebRTC
+    
+    let peer = null;
+    let activeConn = null;
+    let myShortCode = '';
+    let stagingFiles = []; // Fișiere selectate pt trimitere
+    let completedFiles = []; // Fișiere primite sau trimise (organizate)
+    let currentFilter = 'all';
+    let isSending = false;
+
+    // Buffer pentru primire fișier în curs
+    let incomingMeta = null;
+    let incomingChunks = [];
+    let incomingReceivedBytes = 0;
+    let transferStartTime = 0;
+
+    // --- ELEMENTE DOM ---
+    const statusBadge = document.getElementById('statusBadge');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const myCodeDisplay = document.getElementById('myCodeDisplay');
+    const remoteCodeInput = document.getElementById('remoteCodeInput');
+    const connectBtn = document.getElementById('connectBtn');
+    const connectForm = document.getElementById('connectForm');
+    const connectedInfo = document.getElementById('connectedInfo');
+    const peerConnectedId = document.getElementById('peerConnectedId');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const toggleQrBtn = document.getElementById('toggleQrBtn');
+    const qrContainer = document.getElementById('qrContainer');
+    const qrCanvas = document.getElementById('qrCanvas');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const stagingList = document.getElementById('stagingList');
+    const queueCounter = document.getElementById('queueCounter');
+    const sendAllBtn = document.getElementById('sendAllBtn');
+    const transferProgressBox = document.getElementById('transferProgressBox');
+    const transferFileName = document.getElementById('transferFileName');
+    const transferSpeed = document.getElementById('transferSpeed');
+    const transferProgressBar = document.getElementById('transferProgressBar');
+    const emptyVault = document.getElementById('emptyVault');
+    const filesGrid = document.getElementById('filesGrid');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const totalReceivedCount = document.getElementById('totalReceivedCount');
+
+    // --- UTILITARE ---
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function getFileCategory(mimeType, fileName) {
+      const ext = fileName.split('.').pop().toLowerCase();
+      if (mimeType.startsWith('video/') || ['mp4', 'mov', 'mkv', 'avi', 'webm'].includes(ext)) return 'video';
+      if (mimeType.startsWith('audio/') || ['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext)) return 'audio';
+      if (mimeType.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'image';
+      return 'other';
+    }
+
+    function getCategoryBadge(category) {
+      const map = {
+        video: { icon: 'film', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20', label: 'Video' },
+        audio: { icon: 'music', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', label: 'Muzică' },
+        image: { icon: 'image', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', label: 'Imagine' },
+        other: { icon: 'file-text', color: 'text-sky-400 bg-sky-500/10 border-sky-500/20', label: 'Fișier' }
+      };
+      return map[category] || map.other;
+    }
+
+    function updateStatusUI(state, text) {
+      statusText.textContent = text;
+      statusBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ';
+      statusDot.className = 'w-2 h-2 rounded-full ';
+
+      if (state === 'ready') {
+        statusBadge.className += 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20';
+        statusDot.className += 'bg-indigo-400';
+      } else if (state === 'connected') {
+        statusBadge.className += 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+        statusDot.className += 'bg-emerald-400 animate-ping';
+      } else {
+        statusBadge.className += 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+        statusDot.className += 'bg-amber-400 animate-pulse';
+      }
+    }
+
+    // --- INITIALIZARE PEERJS (WebRTC) ---
+    function initPeer() {
+      // Generăm un cod scurt de 4 cifre/litere ușor de tastat pe telefon
+      const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+      myShortCode = '';
+      for (let i = 0; i < 4; i++) {
+        myShortCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      peer = new Peer(APP_PREFIX + myShortCode, {
+        debug: 1,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' }
+          ]
+        }
+      });
+
+      peer.on('open', () => {
+        myCodeDisplay.textContent = myShortCode;
+        updateStatusUI('ready', 'Pregătit de conectare');
+        generateQRCode();
+
+        // Verificăm dacă utilizatorul a scanat un cod QR (?connect=XXXX)
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoConnectCode = urlParams.get('connect');
+        if (autoConnectCode && autoConnectCode.toUpperCase() !== myShortCode) {
+          remoteCodeInput.value = autoConnectCode.toUpperCase();
+          connectToDevice(autoConnectCode.toUpperCase());
+        }
+      });
+
+      peer.on('connection', (conn) => {
+        if (activeConn && activeConn.open) {
+          conn.close();
+          return;
+        }
+        setupConnection(conn);
+      });
+
+      peer.on('error', (err) => {
+        if (err.type === 'unavailable-id') {
+          initPeer(); // Regenerăm dacă ID-ul e luat
+        } else if (err.type === 'peer-unavailable') {
+          showToast('Dispozitivul cu acest cod nu a fost găsit!');
+          updateStatusUI('ready', 'Cod invalid sau offline');
+        } else {
+          console.error('Peer error:', err);
+        }
+      });
+    }
+
+    function generateQRCode() {
+      const url = `${window.location.origin}${window.location.pathname}?connect=${myShortCode}`;
+      new QRious({
+        element: qrCanvas,
+        value: url,
+        size: 180,
+        level: 'H'
+      });
+    }
+
+    function connectToDevice(code) {
+      const cleanCode = code.trim().toUpperCase();
+      if (cleanCode.length !== 4) {
+        showToast('Introdu un cod valid de 4 caractere!');
+        return;
+      }
+      if (cleanCode === myShortCode) {
+        showToast('Nu te poți conecta la propriul cod!');
+        return;
+      }
+      updateStatusUI('wait', 'Se conectează...');
+      const conn = peer.connect(APP_PREFIX + cleanCode, { reliable: true });
+      setupConnection(conn);
+    }
+
+    function setupConnection(conn) {
+      activeConn = conn;
+
+      conn.on('open', () => {
+        const remoteShort = conn.peer.replace(APP_PREFIX, '');
+        updateStatusUI('connected', `Conectat cu ${remoteShort}`);
+        connectForm.classList.add('hidden');
+        qrContainer.classList.add('hidden');
+        connectedInfo.classList.remove('hidden');
+        peerConnectedId.textContent = `Dispozitiv pereche: ${remoteShort}`;
+        updateSendButtonState();
+        showToast(`Conectat cu succes la ${remoteShort}!`);
+      });
+
+      conn.on('data', (data) => {
+        handleIncomingData(data);
+      });
+
+      conn.on('close', () => {
+        resetConnectionUI();
+        showToast('Dispozitivul s-a deconectat.');
+      });
+
+      conn.on('error', () => {
+        resetConnectionUI();
+      });
+    }
+
+    function resetConnectionUI() {
+      activeConn = null;
+      updateStatusUI('ready', 'Pregătit de conectare');
+      connectForm.classList.remove('hidden');
+      connectedInfo.classList.add('hidden');
+      transferProgressBox.classList.add('hidden');
+      updateSendButtonState();
+    }
+
+    // --- GESTIONARE PRIMIRE FISIERE (FARA LIMITA) ---
+    function handleIncomingData(data) {
+      // 1. Primire Header (Metadate)
+      if (data && data.type === 'file-start') {
+        incomingMeta = data;
+        incomingChunks = [];
+        incomingReceivedBytes = 0;
+        transferStartTime = Date.now();
+        
+        transferProgressBox.classList.remove('hidden');
+        transferFileName.textContent = `Se primește: ${data.name}`;
+        transferProgressBar.style.width = '0%';
+        transferSpeed.textContent = '0%';
+        return;
+      }
+
+      // 2. Primire Chunk Binare (ArrayBuffer / Uint8Array / Blob)
+      if (data && data.type === 'file-chunk') {
+        incomingChunks.push(data.chunk);
+        incomingReceivedBytes += data.chunk.byteLength || data.chunk.size || 0;
+
+        if (incomingMeta && incomingMeta.size > 0) {
+          const percent = Math.min(100, Math.round((incomingReceivedBytes / incomingMeta.size) * 100));
+          transferProgressBar.style.width = `${percent}%`;
+          transferSpeed.textContent = `${percent}%`;
+        }
+        return;
+      }
+
+      // 3. Finalizare Fișier
+      if (data && data.type === 'file-end') {
+        if (!incomingMeta) return;
+        const blob = new Blob(incomingChunks, { type: incomingMeta.mime || 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const category = getFileCategory(incomingMeta.mime || '', incomingMeta.name);
+
+        completedFiles.unshift({
+          id: Date.now() + Math.random(),
+          name: incomingMeta.name,
+          size: incomingMeta.size,
+          mime: incomingMeta.mime || 'application/octet-stream',
+          category: category,
+          url: url,
+          direction: 'received',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+
+        incomingMeta = null;
+        incomingChunks = [];
+        transferProgressBox.classList.add('hidden');
+        
+        renderCompletedFiles();
+        showToast(`Fișier primit: ${data.name}`);
+      }
+    }
+
+    // --- TRIMITERE FISIERE CU CHUNKING SI FLOW CONTROL ---
+    async function sendFilesQueue() {
+      if (!activeConn || !activeConn.open || stagingFiles.length === 0 || isSending) return;
+      isSending = true;
+      updateSendButtonState();
+      transferProgressBox.classList.remove('hidden');
+
+      const dc = activeConn.dataChannel;
+
+      while (stagingFiles.length > 0) {
+        const file = stagingFiles[0];
+        transferFileName.textContent = `Se trimite: ${file.name}`;
+        transferProgressBar.style.width = '0%';
+        transferSpeed.textContent = '0%';
+
+        // Trimitem metadatele
+        activeConn.send({
+          type: 'file-start',
+          name: file.name,
+          size: file.size,
+          mime: file.type || 'application/octet-stream'
+        });
+
+        let offset = 0;
+        while (offset < file.size) {
+          // Control memorie WebRTC (Backpressure) pentru fișiere video de mai mulți GB
+          if (dc && dc.bufferedAmount > 8 * 1024 * 1024) {
+            await new Promise(r => setTimeout(r, 40));
+            continue;
+          }
+
+          const slice = file.slice(offset, offset + CHUNK_SIZE);
+          const buffer = await slice.arrayBuffer();
+          
+          activeConn.send({
+            type: 'file-chunk',
+            chunk: buffer
+          });
+
+          offset += buffer.byteLength;
+          const percent = Math.min(100, Math.round((offset / file.size) * 100));
+          transferProgressBar.style.width = `${percent}%`;
+          transferSpeed.textContent = `${percent}%`;
+
+          // Mică pauză la fiecare 1MB ca UI-ul să rămână fluid
+          if (offset % (1024 * 1024) === 0) {
+            await new Promise(r => setTimeout(r, 1));
+          }
+        }
+
+        // Semnalăm finalul fișierului
+        activeConn.send({
+          type: 'file-end',
+          name: file.name
+        });
+
+        // Adăugăm și în lista locală ca trimis (cu posibilitate de re-descărcare/preview)
+        const localUrl = URL.createObjectURL(file);
+        completedFiles.unshift({
+          id: Date.now() + Math.random(),
+          name: file.name,
+          size: file.size,
+          mime: file.type || 'application/octet-stream',
+          category: getFileCategory(file.type || '', file.name),
+          url: localUrl,
+          direction: 'sent',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+
+        stagingFiles.shift();
+        renderStagingList();
+        renderCompletedFiles();
+      }
+
+      transferProgressBox.classList.add('hidden');
+      isSending = false;
+      updateSendButtonState();
+      showToast('Toate fișierele au fost transferate!');
+    }
+
+    // --- UI: LISTA FISIERE IN ASTEPTARE (STAGING) ---
+    function addFilesToStaging(fileList) {
+      for (const file of fileList) {
+        stagingFiles.push(file);
+      }
+      renderStagingList();
+      updateSendButtonState();
+    }
+
+    function renderStagingList() {
+      queueCounter.textContent = `${stagingFiles.length} selectate`;
+      if (stagingFiles.length === 0) {
+        stagingList.classList.add('hidden');
+        stagingList.innerHTML = '';
+        return;
+      }
+
+      stagingList.classList.remove('hidden');
+      stagingList.innerHTML = stagingFiles.map((file, idx) => {
+        const cat = getFileCategory(file.type || '', file.name);
+        const badge = getCategoryBadge(cat);
+        return `
+          <div class="flex items-center justify-between bg-zinc-900/90 border border-white/10 rounded-xl px-3 py-2 text-xs">
+            <div class="flex items-center gap-2.5 overflow-hidden">
+              <span class="p-1.5 rounded-lg border ${badge.color} shrink-0">
+                <i data-lucide="${badge.icon}" class="w-3.5 h-3.5"></i>
+              </span>
+              <div class="truncate">
+                <p class="font-medium text-zinc-200 truncate">${file.name}</p>
+                <p class="text-[11px] text-zinc-500">${formatBytes(file.size)}</p>
+              </div>
+            </div>
+            <button onclick="removeStagingFile(${idx})" class="p-1 text-zinc-500 hover:text-rose-400 transition shrink-0">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    window.removeStagingFile = function(idx) {
+      if (isSending) return;
+      stagingFiles.splice(idx, 1);
+      renderStagingList();
+      updateSendButtonState();
+    };
+
+    function updateSendButtonState() {
+      sendAllBtn.disabled = !(activeConn && activeConn.open && stagingFiles.length > 0 && !isSending);
+    }
+
+    // --- UI: FISIERE TRANSFERATE & ORGANIZATE PE CATEGORII ---
+    function renderCompletedFiles() {
+      // Actualizare contoare pe categorii
+      const counts = { all: completedFiles.length, video: 0, audio: 0, image: 0, other: 0 };
+      completedFiles.forEach(f => counts[f.category] = (counts[f.category] || 0) + 1);
+
+      Object.keys(counts).forEach(key => {
+        const el = document.getElementById(`count-${key}`);
+        if (el) el.textContent = counts[key];
+      });
+
+      if (completedFiles.length > 0) {
+        downloadAllBtn.classList.remove('hidden');
+        totalReceivedCount.textContent = completedFiles.length;
+      } else {
+        downloadAllBtn.classList.add('hidden');
+      }
+
+      const filtered = currentFilter === 'all' 
+        ? completedFiles 
+        : completedFiles.filter(f => f.category === currentFilter);
+
+      if (filtered.length === 0) {
+        emptyVault.classList.remove('hidden');
+        filesGrid.classList.add('hidden');
+        return;
+      }
+
+      emptyVault.classList.add('hidden');
+      filesGrid.classList.remove('hidden');
+
+      filesGrid.innerHTML = filtered.map(item => {
+        const badge = getCategoryBadge(item.category);
+        const dirBadge = item.direction === 'received' 
+          ? '<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">Primit</span>'
+          : '<span class="text-[10px] px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Trimis</span>';
+
+        // Preview media integrat pentru Video, Audio și Imagini
+        let mediaPreview = '';
+        if (item.category === 'video') {
+          mediaPreview = `<video src="${item.url}" controls preload="metadata" class="w-full max-h-48 rounded-lg bg-black mt-3 border border-white/10"></video>`;
+        } else if (item.category === 'audio') {
+          mediaPreview = `<audio src="${item.url}" controls class="w-full h-9 mt-3"></audio>`;
+        } else if (item.category === 'image') {
+          mediaPreview = `<img src="${item.url}" alt="${item.name}" class="w-full max-h-44 object-cover rounded-lg mt-3 border border-white/10" />`;
+        }
+
+        return `
+          <div class="bg-zinc-900/85 border border-white/10 rounded-xl p-3.5 transition hover:border-white/20">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <div class="p-2.5 rounded-xl border ${badge.color} shrink-0">
+                  <i data-lucide="${badge.icon}" class="w-5 h-5"></i>
+                </div>
+                <div class="overflow-hidden">
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-sm font-semibold text-white truncate">${item.name}</h3>
+                  </div>
+                  <div class="flex items-center gap-2 mt-1 text-xs text-zinc-400">
+                    <span>${formatBytes(item.size)}</span>
+                    <span>•</span>
+                    <span>${badge.label}</span>
+                    <span>•</span>
+                    <span>${item.timestamp}</span>
+                    ${dirBadge}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Buton Descarcare Nelimitata -->
+              <a 
+                href="${item.url}" 
+                download="${item.name}" 
+                class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 shadow-md shadow-indigo-600/20 transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Salvează</span>
+              </a>
+            </div>
+            ${mediaPreview}
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- EVENT LISTENERS ---
+    connectBtn.addEventListener('click', () => connectToDevice(remoteCodeInput.value));
+    remoteCodeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') connectToDevice(remoteCodeInput.value);
+    });
+
+    disconnectBtn.addEventListener('click', () => {
+      if (activeConn) activeConn.close();
+      resetConnectionUI();
+    });
+
+    document.getElementById('copyCodeBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(myShortCode);
+      showToast('Codul a fost copiat!');
+    });
+
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+      const url = `${window.location.origin}${window.location.pathname}?connect=${myShortCode}`;
+      navigator.clipboard.writeText(url);
+      showToast('Link-ul de conectare directă a fost copiat!');
+    });
+
+    toggleQrBtn.addEventListener('click', () => {
+      qrContainer.classList.toggle('hidden');
+      qrContainer.classList.toggle('flex');
+    });
+
+    // Drag & Drop
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('drop-active');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drop-active');
+      });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addFilesToStaging(e.dataTransfer.files);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        addFilesToStaging(e.target.files);
+        fileInput.value = '';
+      }
+    });
+
+    sendAllBtn.addEventListener('click', sendFilesQueue);
+
+    // Filtrare pe tab-uri
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white');
+          b.classList.add('bg-zinc-900/80', 'text-zinc-300');
+        });
+        btn.classList.remove('bg-zinc-900/80', 'text-zinc-300');
+        btn.classList.add('bg-indigo-600', 'text-white');
+        currentFilter = btn.dataset.tab;
+        renderCompletedFiles();
+      });
+    });
+
+    // Descarcă toate fișierele dintr-un foc
+    downloadAllBtn.addEventListener('click', () => {
+      completedFiles.forEach((file, index) => {
+        setTimeout(() => {
+          const a = document.createElement('a');
+          a.href = file.url;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }, index * 350);
+      });
+      showToast('Se descarcă toate fișierele...');
+    });
+
+    // Pornire aplicație
+    initPeer();
+  </script>
+</body>
+</html>
