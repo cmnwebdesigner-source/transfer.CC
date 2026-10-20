@@ -3,238 +3,367 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CloudDrop Pro — Transfer Rapid pe Mail & Link</title>
+  <title>CloudDrop Studio — Premium File Transfer</title>
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- QRious pentru QR Code -->
+  <!-- QRious pentru QR Code HD -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <!-- EmailJS (Optional pt trimitere automata in background) -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    :root {
+      color-scheme: dark;
+    }
+
     body {
-      font-family: 'Inter', sans-serif;
-      background: radial-gradient(circle at top left, #1e1b4b, #09090b 65%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #060609;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.16) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.10) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.10) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: #f8fafc;
       min-height: 100vh;
-      color: #f4f4f5;
+      overflow-x: hidden;
     }
-    .glass {
-      background: rgba(24, 24, 27, 0.78);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+
+    .glass-card {
+      background: rgba(18, 18, 24, 0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
+
+    .glass-subtle {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
     .drop-active {
-      border-color: #6366f1 !important;
-      background: rgba(99, 102, 241, 0.15) !important;
+      border-color: #818cf8 !important;
+      background: rgba(99, 102, 241, 0.14) !important;
+      transform: scale(1.01);
     }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #09090b; }
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
   </style>
 </head>
-<body class="antialiased selection:bg-indigo-500 selection:text-white pb-14">
+<body class="antialiased selection:bg-indigo-500 selection:text-white pb-16">
 
-  <!-- Navbar -->
-  <header class="sticky top-0 z-30 glass border-b border-white/10">
-    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-      <a href="?" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition">
-          <i data-lucide="cloud-lightning" class="w-5 h-5 text-white"></i>
+  <!-- TOP NAVBAR -->
+  <header class="sticky top-0 z-40 glass-card border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-2">
+      <a href="?" class="flex items-center gap-3 group shrink-0">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+          <i data-lucide="zap" class="w-5 h-5 text-white"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-tight leading-none">
-            CloudDrop <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 ml-1">HIGH-SPEED GB</span>
-          </h1>
-          <p class="text-xs text-zinc-400 mt-1">Stिल WeTransfer • Upload Cloud & Trimitere pe Mail</p>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-base sm:text-lg tracking-tight text-white">CloudDrop</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">PRO</span>
+          </div>
+          <p class="text-[11px] text-zinc-400 hidden sm:block">Transfer Nelimitat GB • PC & Telefon</p>
         </div>
       </a>
 
       <div class="flex items-center gap-2">
-        <a href="?" id="newTransferBtn" class="hidden px-3.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition flex items-center gap-1.5">
-          <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-indigo-400"></i> Transfer Nou
+        <a href="?" id="resetAppBtn" class="hidden px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-200 transition flex items-center gap-1.5">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-indigo-400"></i>
+          <span>Transfer Nou</span>
         </a>
-        <div id="serverBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="serverStatusText">Cloud CDN Activ (Nelimitat)</span>
+          <span class="hidden xs:inline">CDN Viteză Maximă</span>
+          <span class="xs:hidden">Online</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Main Layout -->
-  <main class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 mt-6 sm:mt-8">
 
-    <!-- COLOANA STÂNGA: Formular WeTransfer (Upload + Email) -->
-    <div id="uploadColumn" class="lg:col-span-5 space-y-6">
-      <section class="glass rounded-2xl p-5 shadow-2xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-            <i data-lucide="send" class="w-4 h-4 text-indigo-400"></i>
-            Trimite Fișiere (WeTransfer Mode)
-          </h2>
-          <span id="selectedCount" class="text-xs text-zinc-400 font-medium">0 fișiere</span>
+    <!-- BANNER PACHET PRIMIT (Apare automat cand deschizi link-ul din Mail/WhatsApp pe telefon) -->
+    <div id="receivedBanner" class="hidden mb-6 p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-indigo-950/90 via-zinc-900/90 to-emerald-950/80 border border-indigo-500/30 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+          <i data-lucide="package-check" class="w-6 h-6 text-emerald-400"></i>
         </div>
-
-        <!-- Zona Drag & Drop -->
-        <label id="dropZone" for="fileInput" class="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-indigo-500 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all bg-zinc-900/50 group">
-          <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
-            <i data-lucide="folder-up" class="w-6 h-6 text-indigo-400"></i>
-          </div>
-          <p class="text-sm font-semibold text-zinc-200">Adaugă filmări, muzică sau foldere</p>
-          <p class="text-xs text-zinc-400 mt-1">Viteză maximă CDN • Fără limită de GB sau descărcări</p>
-          <input id="fileInput" type="file" multiple class="hidden" />
-        </label>
-
-        <!-- Lista fisiere selectate -->
-        <div id="fileQueueList" class="mt-3 space-y-2 max-h-44 overflow-y-auto hidden pr-1"></div>
-
-        <!-- Campuri Email & Mesaj (Ca pe WeTransfer) -->
-        <div class="mt-4 space-y-3 pt-3 border-t border-white/10">
-          <div>
-            <label class="text-xs text-zinc-400 font-medium block mb-1">Trimite pe adresa de Email (opțional):</label>
-            <div class="relative">
-              <i data-lucide="mail" class="w-4 h-4 text-zinc-500 absolute left-3.5 top-3"></i>
-              <input id="recipientEmail" type="email" placeholder="exemplu@gmail.com" class="w-full bg-zinc-900/90 border border-white/10 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500" />
-            </div>
-          </div>
-
-          <div>
-            <label class="text-xs text-zinc-400 font-medium block mb-1">Titlu pachet / Mesaj:</label>
-            <input id="transferMessage" type="text" placeholder="Ex: Filmări OBS + Muzică pt telefon" class="w-full bg-zinc-900/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500" />
-          </div>
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Pachet Gata de Descărcare</span>
+          <h2 id="bannerTitle" class="text-lg sm:text-xl font-extrabold text-white leading-tight">Fișiere Primite</h2>
+          <p id="bannerMeta" class="text-xs text-zinc-300 mt-0.5">Toate fișierele sunt sortate mai jos pe categorii</p>
         </div>
-
-        <!-- Bara de Progres Upload cu Viteza MB/s -->
-        <div id="uploadProgressBox" class="hidden mt-4 p-3.5 rounded-xl bg-zinc-900 border border-indigo-500/30">
-          <div class="flex justify-between items-center text-xs mb-1">
-            <span id="uploadFileName" class="font-semibold text-zinc-200 truncate max-w-[65%]">Se încarcă în Cloud...</span>
-            <span id="uploadSpeedText" class="text-indigo-400 font-mono">0 MB/s</span>
-          </div>
-          <div class="w-full h-2.5 bg-zinc-800 rounded-full overflow-hidden my-1.5">
-            <div id="uploadProgressBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 w-0 transition-all duration-150"></div>
-          </div>
-          <div class="flex justify-between items-center text-[11px] text-zinc-400">
-            <span id="uploadBytesInfo">0 MB / 0 MB</span>
-            <span id="uploadPercentText" class="font-bold text-white">0%</span>
-          </div>
-        </div>
-
-        <!-- Buton Principal: Genereaza Link & Trimite pe Mail -->
-        <button id="startUploadBtn" disabled class="w-full mt-4 py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white font-semibold text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
-          <i data-lucide="sparkles" class="w-4 h-4"></i>
-          <span>Încarcă & Trimite pe Mail / Link</span>
-        </button>
-
-        <!-- Rezultat Dupa Upload: Link, Buton Mail, WhatsApp & QR -->
-        <div id="shareResultBox" class="hidden mt-5 pt-4 border-t border-white/10 space-y-4">
-          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
-            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
-            <div class="text-xs">
-              <p class="font-bold text-emerald-300">Fișierele sunt gata de descărcare!</p>
-              <p class="text-emerald-400/80">Le poți deschide pe telefon din Mail, Link sau QR.</p>
-            </div>
-          </div>
-
-          <!-- Link generat -->
-          <div>
-            <label class="text-xs text-zinc-400 block mb-1">Link-ul pachetului tău (Cu categoriile sortate):</label>
-            <div class="flex gap-2">
-              <input id="generatedLinkInput" type="text" readonly class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono focus:outline-none" />
-              <button id="copyShareLinkBtn" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0 flex items-center gap-1">
-                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiază
-              </button>
-            </div>
-          </div>
-
-          <!-- Actiuni Rapide: Trimite Mail / WhatsApp -->
-          <div class="grid grid-cols-2 gap-2.5">
-            <button id="sendEmailAppBtn" class="py-2.5 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-              <i data-lucide="mail-check" class="w-4 h-4"></i> Trimite pe Mail
-            </button>
-            <button id="sendWhatsappBtn" class="py-2.5 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-              <i data-lucide="share-2" class="w-4 h-4"></i> Trimite WhatsApp
-            </button>
-          </div>
-
-          <!-- QR Code pentru deschidere instanta pe telefon -->
-          <div class="bg-white p-3.5 rounded-xl flex flex-col items-center justify-center">
-            <canvas id="shareQrCanvas" class="w-36 h-36"></canvas>
-            <p class="text-[11px] text-zinc-800 font-semibold mt-1.5">Scanează cu telefonul ca să descarci direct</p>
-          </div>
-        </div>
-
-      </section>
+      </div>
+      <button id="bannerDownloadAllBtn" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0">
+        <i data-lucide="folder-down" class="w-4 h-4"></i>
+        <span>Deschide Folderul Complet Cloud</span>
+      </button>
     </div>
 
-    <!-- COLOANA DREAPTA: Vizualizare & Descarcare Organizate pe Categorii -->
-    <div id="vaultColumn" class="lg:col-span-7">
-      <section class="glass rounded-2xl p-5 shadow-2xl min-h-[540px] flex flex-col">
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- COLOANA STÂNGA: CARD UPLOAD WETRANSFER & SHARE (5 COLOANE PE PC) -->
+      <div id="leftColumn" class="lg:col-span-5 space-y-6">
         
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
-          <div>
-            <h2 id="packTitleDisplay" class="text-base font-bold text-white flex items-center gap-2">
-              <i data-lucide="folder-kanban" class="w-5 h-5 text-indigo-400"></i>
-              <span>Fișiere Organizate pentru Descărcare</span>
-            </h2>
-            <p id="packSubtitleDisplay" class="text-xs text-zinc-400 mt-0.5">Aranjate automat pe Video, Muzică, Imagini și Documente</p>
+        <section class="glass-card rounded-3xl p-5 sm:p-6 relative overflow-hidden">
+          <!-- Header Sectiune -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xs">1</div>
+              <div>
+                <h2 class="text-sm sm:text-base font-bold text-white leading-none">Adaugă & Trimite Fișiere</h2>
+                <p class="text-[11px] text-zinc-400 mt-1">Filmări OBS, Muzică, Poze sau Arhive</p>
+              </div>
+            </div>
+            <span id="queueBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-zinc-300 border border-white/10">0 selectate</span>
           </div>
 
-          <div class="flex items-center gap-2">
-            <a id="directCloudFolderBtn" href="#" target="_blank" class="hidden px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
-              <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Folder Cloud
-            </a>
-            <button id="downloadAllBtn" class="hidden px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-lg shadow-emerald-600/20">
-              <i data-lucide="download" class="w-4 h-4"></i>
-              Descarcă Tot (<span id="totalFilesBadge">0</span>)
+          <!-- DRAG & DROP ZONE -->
+          <label id="dropZone" for="fileInput" class="cursor-pointer border-2 border-dashed border-zinc-700/80 hover:border-indigo-400 rounded-2xl p-6 sm:p-7 flex flex-col items-center justify-center text-center transition-all duration-200 bg-zinc-950/50 group">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-inner">
+              <i data-lucide="upload-cloud" class="w-7 h-7 text-indigo-400"></i>
+            </div>
+            <p class="text-sm font-bold text-white">Apasă pentru a alege fișiere</p>
+            <p class="text-xs text-zinc-400 mt-1">sau trage-le direct aici (Fără limită de GB)</p>
+            <div class="flex flex-wrap items-center justify-center gap-1.5 mt-3.5">
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20">Video MP4/MKV</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20">Muzică MP3/WAV</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">Poze & Documente</span>
+            </div>
+            <input id="fileInput" type="file" multiple class="hidden" />
+          </label>
+
+          <!-- LISTA FISIERE SELECTATE PENTRU UPLOAD -->
+          <div id="stagingContainer" class="hidden mt-4">
+            <div class="flex items-center justify-between text-xs text-zinc-400 mb-2 px-1">
+              <span>Pregătite de încărcare:</span>
+              <button id="clearStagingBtn" class="text-rose-400 hover:text-rose-300 font-semibold">Golește lista</button>
+            </div>
+            <div id="stagingList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- FORMULAR DETALII TRANSFER (EMAIL + TITLU) -->
+          <div class="mt-5 pt-5 border-t border-white/10 space-y-3.5">
+            <div>
+              <label class="text-xs font-semibold text-zinc-300 flex items-center justify-between mb-1.5">
+                <span>Trimite către Email (opțional):</span>
+                <span class="text-[10px] text-indigo-400 font-normal">Compatibil Gmail / Yahoo / iCloud</span>
+              </label>
+              <div class="relative">
+                <i data-lucide="mail" class="w-4 h-4 text-zinc-500 absolute left-3.5 top-3"></i>
+                <input id="emailInput" type="email" placeholder="adresa.ta@gmail.com" class="w-full bg-zinc-950/90 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition" />
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-zinc-300 block mb-1.5">Nume Pachet / Mesaj:</label>
+              <div class="relative">
+                <i data-lucide="tag" class="w-4 h-4 text-zinc-500 absolute left-3.5 top-3"></i>
+                <input id="titleInput" type="text" placeholder="Ex: Filmări Laptop + Piese Noi" class="w-full bg-zinc-950/90 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition" />
+              </div>
+            </div>
+          </div>
+
+          <!-- BARA DE PROGRES UPLOAD -->
+          <div id="progressSection" class="hidden mt-5 p-4 rounded-2xl bg-zinc-950 border border-indigo-500/40 shadow-inner">
+            <div class="flex items-center justify-between text-xs mb-2">
+              <span id="progressFileName" class="font-bold text-white truncate max-w-[68%]">Se încarcă...</span>
+              <span id="progressSpeed" class="font-mono font-bold text-indigo-400">0.0 MB/s</span>
+            </div>
+            <div class="w-full h-3 bg-zinc-800 rounded-full overflow-hidden p-0.5">
+              <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 w-0 transition-all duration-150"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2">
+              <span id="progressBytes">0 MB / 0 MB</span>
+              <span id="progressPercent" class="font-extrabold text-white">0%</span>
+            </div>
+          </div>
+
+          <!-- BUTON START UPLOAD -->
+          <button id="uploadBtn" disabled class="w-full mt-5 py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/25 active:scale-[0.99]">
+            <i data-lucide="rocket" class="w-4 h-4"></i>
+            <span>Generează Link & Pregătește Trimiterea</span>
+          </button>
+
+          <!-- PANOU REZULTAT: TRIMITERE PE MAIL, GMAIL, WHATSAPP & QR (APARE DUPA UPLOAD) -->
+          <div id="sharePanel" class="hidden mt-6 pt-6 border-t border-white/10 space-y-4">
+            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
+              </div>
+              <div class="text-xs">
+                <p class="font-bold text-emerald-300">Pachetul tău a fost urcat în Cloud!</p>
+                <p class="text-emerald-400/80">Alege mai jos cum vrei să-l trimiți pe telefon sau PC.</p>
+              </div>
+            </div>
+
+            <!-- Copy Link Box -->
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 block mb-1.5">Link Unic (cu fișierele sortate):</label>
+              <div class="flex gap-2">
+                <input id="shareLinkInput" type="text" readonly class="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-indigo-300 font-mono focus:outline-none" />
+                <button id="copyLinkBtn" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shrink-0 flex items-center gap-1.5 transition">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Copiază</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Butoane Actiune Garantate: WhatsApp, Gmail Web, Mail App, Share Mobil -->
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 block mb-2">Trimite instant prin:</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <!-- WhatsApp -->
+                <button id="whatsappBtn" class="py-3 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-2 transition">
+                  <i data-lucide="message-circle" class="w-4 h-4"></i>
+                  <span>WhatsApp</span>
+                </button>
+
+                <!-- Gmail Direct in Browser (Nu da niciodata gres pe PC!) -->
+                <button id="gmailWebBtn" class="py-3 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-300 text-xs font-bold flex items-center justify-center gap-2 transition">
+                  <i data-lucide="mail-plus" class="w-4 h-4"></i>
+                  <span>Gmail Web</span>
+                </button>
+
+                <!-- Aplicatia de Mail (Telefon / Outlook / Apple Mail) -->
+                <button id="defaultMailBtn" class="py-3 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition">
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                  <span>Aplicație Mail</span>
+                </button>
+
+                <!-- Share Nativ Telefon (AirDrop, Telegram, Instagram, etc.) -->
+                <button id="nativeShareBtn" class="py-3 px-3 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-bold flex items-center justify-center gap-2 transition">
+                  <i data-lucide="share-2" class="w-4 h-4"></i>
+                  <span>Share Telefon</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- QR Code pentru Telefon -->
+            <div class="bg-white p-4 rounded-2xl flex flex-col sm:flex-row items-center gap-4 text-zinc-900">
+              <canvas id="qrCanvas" class="w-28 h-28 shrink-0 rounded-lg"></canvas>
+              <div class="text-center sm:text-left">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">Scanare Directă</span>
+                <h4 class="font-bold text-sm mt-1">Deschide camera pe telefon</h4>
+                <p class="text-xs text-zinc-600 mt-0.5">Scanează codul QR de pe ecranul laptopului și toate fișierele îți apar direct pe telefon.</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+      <!-- COLOANA DREAPTA: DASHBOARD FISIERE ARANJATE CORECT PE CATEGORII (7 COLOANE PE PC) -->
+      <div id="rightColumn" class="lg:col-span-7 space-y-6">
+        
+        <section class="glass-card rounded-3xl p-5 sm:p-6 min-h-[580px] flex flex-col">
+          
+          <!-- Header Dashboard -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 id="vaultHeaderTitle" class="text-base sm:text-lg font-extrabold text-white">Fișiere Aranjate pe Categorii</h2>
+                <p id="vaultHeaderSub" class="text-xs text-zinc-400">Sortare inteligentă: Video, Muzică, Imagini și Documente</p>
+              </div>
+            </div>
+
+            <!-- Buton Deschide Folder Cloud / Descarca Tot -->
+            <div class="flex items-center gap-2">
+              <a id="cloudFolderBtn" href="#" target="_blank" rel="noopener" class="hidden w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20">
+                <i data-lucide="download-cloud" class="w-4 h-4"></i>
+                <span>Descarcă Tot (<span id="totalCountBadge">0</span>)</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- TAB-URI CATEGORII (SCROLLABILE PE MOBIL) -->
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-4 border-b border-white/5">
+            <button data-cat="all" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition flex items-center gap-2 shrink-0 shadow-md shadow-indigo-600/25">
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+              <span>Toate</span>
+              <span id="badge-all" class="px-1.5 py-0.5 rounded-md bg-black/25 text-[10px]">0</span>
+            </button>
+
+            <button data-cat="video" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold glass-subtle hover:bg-white/10 text-zinc-300 transition flex items-center gap-2 shrink-0">
+              <i data-lucide="film" class="w-3.5 h-3.5 text-rose-400"></i>
+              <span>Video</span>
+              <span id="badge-video" class="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px]">0</span>
+            </button>
+
+            <button data-cat="audio" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold glass-subtle hover:bg-white/10 text-zinc-300 transition flex items-center gap-2 shrink-0">
+              <i data-lucide="music" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Muzică</span>
+              <span id="badge-audio" class="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px]">0</span>
+            </button>
+
+            <button data-cat="image" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold glass-subtle hover:bg-white/10 text-zinc-300 transition flex items-center gap-2 shrink-0">
+              <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Imagini</span>
+              <span id="badge-image" class="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px]">0</span>
+            </button>
+
+            <button data-cat="other" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold glass-subtle hover:bg-white/10 text-zinc-300 transition flex items-center gap-2 shrink-0">
+              <i data-lucide="file-archive" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>Altele</span>
+              <span id="badge-other" class="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px]">0</span>
             </button>
           </div>
-        </div>
 
-        <!-- Tab-uri Categorii -->
-        <div class="flex items-center gap-1.5 overflow-x-auto py-3 border-b border-white/5">
-          <button data-tab="all" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition flex items-center gap-1.5 shrink-0">
-            <i data-lucide="layers" class="w-3.5 h-3.5"></i> Toate <span id="count-all" class="px-1.5 py-0.2 bg-black/20 rounded-full text-[10px]">0</span>
-          </button>
-          <button data-tab="video" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
-            <i data-lucide="film" class="w-3.5 h-3.5 text-rose-400"></i> Video <span id="count-video" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
-          </button>
-          <button data-tab="audio" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
-            <i data-lucide="music" class="w-3.5 h-3.5 text-amber-400"></i> Muzică <span id="count-audio" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
-          </button>
-          <button data-tab="image" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
-            <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-400"></i> Imagini <span id="count-image" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
-          </button>
-          <button data-tab="other" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 transition flex items-center gap-1.5 shrink-0">
-            <i data-lucide="file-archive" class="w-3.5 h-3.5 text-sky-400"></i> Altele <span id="count-other" class="px-1.5 py-0.2 bg-white/5 rounded-full text-[10px]">0</span>
-          </button>
-        </div>
-
-        <!-- Empty State -->
-        <div id="emptyVault" class="flex-1 flex flex-col items-center justify-center text-center py-14 px-4">
-          <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mb-3 text-zinc-600">
-            <i data-lucide="cloud-download" class="w-8 h-8"></i>
+          <!-- BARA CAUTARE RAPIDA IN FISIERE -->
+          <div id="searchBarWrap" class="hidden mt-4">
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 text-zinc-500 absolute left-3.5 top-2.5"></i>
+              <input id="searchFilesInput" type="text" placeholder="Caută rapid o filmare sau o melodie..." class="w-full bg-zinc-950/70 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500" />
+            </div>
           </div>
-          <p class="text-sm font-medium text-zinc-300">Niciun pachet încărcat în această sesiune</p>
-          <p class="text-xs text-zinc-500 max-w-xs mt-1">Încarcă filmările sau muzica în stânga, iar aici vor apărea sortate și gata de descărcare cu viteză maximă.</p>
-        </div>
 
-        <!-- Lista Fisiere Organizate -->
-        <div id="filesGrid" class="mt-4 space-y-3 overflow-y-auto flex-1 hidden pr-1"></div>
+          <!-- EMPTY STATE -->
+          <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-center py-16 px-4">
+            <div class="w-20 h-20 rounded-3xl bg-zinc-900/90 border border-white/10 flex items-center justify-center mb-4 text-zinc-600 shadow-inner">
+              <i data-lucide="folder-heart" class="w-9 h-9 text-indigo-400/60"></i>
+            </div>
+            <h3 class="text-base font-bold text-zinc-200">Niciun fișier în această categorie</h3>
+            <p class="text-xs text-zinc-500 max-w-sm mt-1.5 leading-relaxed">
+              Adaugă fișiere în panoul din stânga pentru a genera un pachet, sau deschide un link primit pe Mail / WhatsApp.
+            </p>
+          </div>
 
-      </section>
+          <!-- GRID FISIERE TRANSFERATE -->
+          <div id="filesListContainer" class="mt-4 space-y-3 overflow-y-auto flex-1 hidden pr-1"></div>
+
+        </section>
+
+      </div>
+
     </div>
-
   </main>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-    <div class="glass px-4 py-3 rounded-xl shadow-2xl border border-indigo-500/30 flex items-center gap-2.5 text-xs font-medium text-white">
-      <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
-      <span id="toastMsg">Notificare</span>
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none w-[90%] max-w-sm">
+    <div class="glass-card px-4 py-3.5 rounded-2xl border border-indigo-500/40 flex items-center gap-3 text-xs font-bold text-white shadow-2xl">
+      <div class="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+      </div>
+      <span id="toastText" class="truncate">Acțiune finalizată!</span>
     </div>
   </div>
 
@@ -242,79 +371,92 @@
     lucide.createIcons();
 
     // --- STATE ---
-    let selectedFiles = [];
-    let uploadedItems = [];
-    let currentTab = 'all';
+    let stagingFiles = [];
+    let activePackFiles = [];
+    let activeCategory = 'all';
+    let searchQuery = '';
     let isUploading = false;
-    let lastShareUrl = '';
-    let cloudFolderPageUrl = '';
+    let currentShareLink = '';
+    let currentCloudFolder = '';
+    let currentPackTitle = 'Pachet CloudDrop';
 
-    // --- DOM ELEMENTS ---
+    // --- DOM ---
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-    const fileQueueList = document.getElementById('fileQueueList');
-    const selectedCount = document.getElementById('selectedCount');
-    const recipientEmail = document.getElementById('recipientEmail');
-    const transferMessage = document.getElementById('transferMessage');
-    const startUploadBtn = document.getElementById('startUploadBtn');
-    const uploadProgressBox = document.getElementById('uploadProgressBox');
-    const uploadFileName = document.getElementById('uploadFileName');
-    const uploadSpeedText = document.getElementById('uploadSpeedText');
-    const uploadProgressBar = document.getElementById('uploadProgressBar');
-    const uploadBytesInfo = document.getElementById('uploadBytesInfo');
-    const uploadPercentText = document.getElementById('uploadPercentText');
-    const shareResultBox = document.getElementById('shareResultBox');
-    const generatedLinkInput = document.getElementById('generatedLinkInput');
-    const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
-    const sendEmailAppBtn = document.getElementById('sendEmailAppBtn');
-    const sendWhatsappBtn = document.getElementById('sendWhatsappBtn');
-    const shareQrCanvas = document.getElementById('shareQrCanvas');
-    const emptyVault = document.getElementById('emptyVault');
-    const filesGrid = document.getElementById('filesGrid');
-    const downloadAllBtn = document.getElementById('downloadAllBtn');
-    const directCloudFolderBtn = document.getElementById('directCloudFolderBtn');
-    const totalFilesBadge = document.getElementById('totalFilesBadge');
+    const queueBadge = document.getElementById('queueBadge');
+    const stagingContainer = document.getElementById('stagingContainer');
+    const stagingList = document.getElementById('stagingList');
+    const clearStagingBtn = document.getElementById('clearStagingBtn');
+    const emailInput = document.getElementById('emailInput');
+    const titleInput = document.getElementById('titleInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressSection = document.getElementById('progressSection');
+    const progressFileName = document.getElementById('progressFileName');
+    const progressSpeed = document.getElementById('progressSpeed');
+    const progressBar = document.getElementById('progressBar');
+    const progressBytes = document.getElementById('progressBytes');
+    const progressPercent = document.getElementById('progressPercent');
+    const sharePanel = document.getElementById('sharePanel');
+    const shareLinkInput = document.getElementById('shareLinkInput');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const gmailWebBtn = document.getElementById('gmailWebBtn');
+    const defaultMailBtn = document.getElementById('defaultMailBtn');
+    const nativeShareBtn = document.getElementById('nativeShareBtn');
+    const qrCanvas = document.getElementById('qrCanvas');
+    const emptyState = document.getElementById('emptyState');
+    const filesListContainer = document.getElementById('filesListContainer');
+    const cloudFolderBtn = document.getElementById('cloudFolderBtn');
+    const totalCountBadge = document.getElementById('totalCountBadge');
+    const searchBarWrap = document.getElementById('searchBarWrap');
+    const searchFilesInput = document.getElementById('searchFilesInput');
+    const receivedBanner = document.getElementById('receivedBanner');
+    const bannerTitle = document.getElementById('bannerTitle');
+    const bannerMeta = document.getElementById('bannerMeta');
+    const bannerDownloadAllBtn = document.getElementById('bannerDownloadAllBtn');
+    const resetAppBtn = document.getElementById('resetAppBtn');
 
     // --- HELPERS ---
-    function showToast(msg) {
+    function showToast(message) {
       const toast = document.getElementById('toast');
-      document.getElementById('toastMsg').textContent = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3200);
+      document.getElementById('toastText').textContent = message;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3200);
     }
 
-    function formatBytes(bytes) {
-      if (!bytes || bytes === 0) return '0 B';
-      const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    function formatSize(bytes) {
+      if (!bytes || bytes <= 0) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (bytes / Math.pow(1024, i)).toFixed(i > 1 ? 2 : 0) + ' ' + units[i];
     }
 
-    function getCategory(fileName) {
+    function detectCategory(fileName) {
       const ext = (fileName.split('.').pop() || '').toLowerCase();
-      if (['mp4', 'mov', 'mkv', 'avi', 'webm', 'flv', 'm4v'].includes(ext)) return 'video';
-      if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) return 'audio';
-      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'image';
+      if (['mp4', 'mkv', 'mov', 'avi', 'webm', 'flv', 'm4v', 'ts'].includes(ext)) return 'video';
+      if (['mp3', 'wav', 'flac', 'm4a', 'ogg', 'aac', 'wma'].includes(ext)) return 'audio';
+      if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'bmp', 'heic'].includes(ext)) return 'image';
       return 'other';
     }
 
-    function getBadgeStyle(cat) {
-      const styles = {
-        video: { icon: 'film', cls: 'text-rose-400 bg-rose-500/10 border-rose-500/20', label: 'Video' },
-        audio: { icon: 'music', cls: 'text-amber-400 bg-amber-500/10 border-amber-500/20', label: 'Muzică' },
-        image: { icon: 'image', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', label: 'Imagine' },
-        other: { icon: 'file-archive', cls: 'text-sky-400 bg-sky-500/10 border-sky-500/20', label: 'Fișier' }
+    function getCategoryMeta(cat) {
+      const meta = {
+        video: { icon: 'film', label: 'Video', badge: 'text-rose-400 bg-rose-500/10 border-rose-500/25' },
+        audio: { icon: 'music', label: 'Muzică', badge: 'text-amber-400 bg-amber-500/10 border-amber-500/25' },
+        image: { icon: 'image', label: 'Imagine', badge: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25' },
+        other: { icon: 'file-archive', label: 'Document / Arhivă', badge: 'text-sky-400 bg-sky-500/10 border-sky-500/25' }
       };
-      return styles[cat] || styles.other;
+      return meta[cat] || meta.other;
     }
 
-    // Codificare si decodificare sigura URL (fara baza de date externa)
-    function encodePackData(obj) {
+    // Compresie URL curată și sigură pentru caractere românești
+    function encodePayload(obj) {
       return btoa(encodeURIComponent(JSON.stringify(obj)));
     }
 
-    function decodePackData(str) {
+    function decodePayload(str) {
       try {
         return JSON.parse(decodeURIComponent(atob(str)));
       } catch (e) {
@@ -322,41 +464,41 @@
       }
     }
 
-    // --- GESTIONARE FISIERE SELECTATE ---
-    function addFiles(fileList) {
-      for (const f of fileList) {
-        selectedFiles.push(f);
+    // --- STAGING (SELECTARE FISIERE PENTRU UPLOAD) ---
+    function addFilesToStaging(fileList) {
+      for (const file of fileList) {
+        stagingFiles.push(file);
       }
-      renderQueue();
+      renderStaging();
     }
 
-    function renderQueue() {
-      selectedCount.textContent = `${selectedFiles.length} fișiere`;
-      startUploadBtn.disabled = selectedFiles.length === 0 || isUploading;
+    function renderStaging() {
+      queueBadge.textContent = `${stagingFiles.length} selectate`;
+      uploadBtn.disabled = stagingFiles.length === 0 || isUploading;
 
-      if (selectedFiles.length === 0) {
-        fileQueueList.classList.add('hidden');
-        fileQueueList.innerHTML = '';
+      if (stagingFiles.length === 0) {
+        stagingContainer.classList.add('hidden');
+        stagingList.innerHTML = '';
         return;
       }
 
-      fileQueueList.classList.remove('hidden');
-      fileQueueList.innerHTML = selectedFiles.map((f, i) => {
-        const cat = getCategory(f.name);
-        const b = getBadgeStyle(cat);
+      stagingContainer.classList.remove('hidden');
+      stagingList.innerHTML = stagingFiles.map((file, idx) => {
+        const cat = detectCategory(file.name);
+        const m = getCategoryMeta(cat);
         return `
-          <div class="flex items-center justify-between bg-zinc-900/90 border border-white/10 rounded-xl px-3 py-2 text-xs">
+          <div class="flex items-center justify-between bg-zinc-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs">
             <div class="flex items-center gap-2.5 overflow-hidden">
-              <span class="p-1.5 rounded-lg border ${b.cls} shrink-0">
-                <i data-lucide="${b.icon}" class="w-3.5 h-3.5"></i>
-              </span>
+              <div class="p-1.5 rounded-lg border ${m.badge} shrink-0">
+                <i data-lucide="${m.icon}" class="w-3.5 h-3.5"></i>
+              </div>
               <div class="truncate">
-                <p class="font-medium text-zinc-200 truncate">${f.name}</p>
-                <p class="text-[11px] text-zinc-500">${formatBytes(f.size)}</p>
+                <p class="font-bold text-zinc-200 truncate">${file.name}</p>
+                <p class="text-[10px] text-zinc-400">${formatSize(file.size)} • ${m.label}</p>
               </div>
             </div>
-            <button onclick="removeFileFromQueue(${i})" class="p-1 text-zinc-500 hover:text-rose-400 transition">
-              <i data-lucide="x" class="w-4 h-4"></i>
+            <button onclick="removeStaged(${idx})" class="p-1.5 text-zinc-500 hover:text-rose-400 transition shrink-0">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         `;
@@ -364,249 +506,262 @@
       lucide.createIcons();
     }
 
-    window.removeFileFromQueue = function(index) {
+    window.removeStaged = function(idx) {
       if (isUploading) return;
-      selectedFiles.splice(index, 1);
-      renderQueue();
+      stagingFiles.splice(idx, 1);
+      renderStaging();
     };
 
-    // --- UPLOAD RAPID IN CLOUD CDN (GOFILE MULTI-REGION API) ---
-    async function getBestCloudServer() {
+    clearStagingBtn.addEventListener('click', () => {
+      if (isUploading) return;
+      stagingFiles = [];
+      renderStaging();
+    });
+
+    // --- UPLOAD RAPID IN CLOUD ---
+    async function getOptimalServer() {
       try {
         const res = await fetch('https://api.gofile.io/servers');
-        const data = await res.json();
-        if (data && data.status === 'ok' && data.data.servers.length > 0) {
-          return data.data.servers[0].name;
+        const json = await res.json();
+        if (json && json.status === 'ok' && json.data.servers.length > 0) {
+          return json.data.servers[0].name;
         }
       } catch (e) {
-        console.warn('Fallback pe serverul automat de upload...');
+        console.warn('Folosim serverul principal store1...');
       }
       return 'store1';
     }
 
-    function uploadSingleFileWithProgress(file, server, guestToken, folderId) {
+    function uploadFileXHR(file, server, guestToken, folderId) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        const url = `https://${server}.gofile.io/contents/uploadfile`;
         const formData = new FormData();
         formData.append('file', file);
         if (guestToken) formData.append('token', guestToken);
         if (folderId) formData.append('folderId', folderId);
 
-        let startTime = Date.now();
+        const startTime = Date.now();
 
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            const elapsedSec = Math.max(0.1, (Date.now() - startTime) / 1000);
-            const speedMBps = ((e.loaded / (1024 * 1024)) / elapsedSec).toFixed(1);
+            const pct = Math.round((e.loaded / e.total) * 100);
+            const sec = Math.max(0.1, (Date.now() - startTime) / 1000);
+            const speed = ((e.loaded / (1024 * 1024)) / sec).toFixed(1);
 
-            uploadProgressBar.style.width = `${percent}%`;
-            uploadPercentText.textContent = `${percent}%`;
-            uploadSpeedText.textContent = `${speedMBps} MB/s`;
-            uploadBytesInfo.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
+            progressBar.style.width = `${pct}%`;
+            progressPercent.textContent = `${pct}%`;
+            progressSpeed.textContent = `${speed} MB/s`;
+            progressBytes.textContent = `${formatSize(e.loaded)} / ${formatSize(e.total)}`;
           }
         });
 
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
-              const resp = JSON.parse(xhr.responseText);
-              if (resp.status === 'ok') {
-                resolve(resp.data);
-              } else {
-                reject(new Error('Eroare API Cloud'));
-              }
+              const parsed = JSON.parse(xhr.responseText);
+              if (parsed.status === 'ok') resolve(parsed.data);
+              else reject(new Error('Răspuns invalid de la Cloud'));
             } catch (err) {
               reject(err);
             }
           } else {
-            reject(new Error(`HTTP Error ${xhr.status}`));
+            reject(new Error(`HTTP ${xhr.status}`));
           }
         };
 
-        xhr.onerror = () => reject(new Error('Eroare de rețea la încărcare'));
-        xhr.open('POST', url, true);
+        xhr.onerror = () => reject(new Error('Eroare conexiune rețea'));
+        xhr.open('POST', `https://${server}.gofile.io/contents/uploadfile`, true);
         xhr.send(formData);
       });
     }
 
-    async function handleStartUpload() {
-      if (selectedFiles.length === 0 || isUploading) return;
+    async function startUploadProcess() {
+      if (stagingFiles.length === 0 || isUploading) return;
       isUploading = true;
-      startUploadBtn.disabled = true;
-      shareResultBox.classList.add('hidden');
-      uploadProgressBox.classList.remove('hidden');
+      uploadBtn.disabled = true;
+      sharePanel.classList.add('hidden');
+      progressSection.classList.remove('hidden');
 
       try {
-        const server = await getBestCloudServer();
+        const server = await getOptimalServer();
         let guestToken = null;
         let folderId = null;
-        const newlyUploaded = [];
+        const uploadedList = [];
 
-        for (let i = 0; i < selectedFiles.length; i++) {
-          const file = selectedFiles[i];
-          uploadFileName.textContent = `(${i + 1}/${selectedFiles.length}) Se urcă: ${file.name}`;
-          uploadProgressBar.style.width = '0%';
+        for (let i = 0; i < stagingFiles.length; i++) {
+          const file = stagingFiles[i];
+          progressFileName.textContent = `(${i + 1}/${stagingFiles.length}) ${file.name}`;
+          progressBar.style.width = '0%';
 
-          const resultData = await uploadSingleFileWithProgress(file, server, guestToken, folderId);
+          const data = await uploadFileXHR(file, server, guestToken, folderId);
 
-          if (!guestToken && resultData.guestToken) guestToken = resultData.guestToken;
-          if (!folderId && resultData.parentFolder) folderId = resultData.parentFolder;
-          if (resultData.downloadPage) cloudFolderPageUrl = resultData.downloadPage;
+          if (!guestToken && data.guestToken) guestToken = data.guestToken;
+          if (!folderId && data.parentFolder) folderId = data.parentFolder;
+          if (data.downloadPage) currentCloudFolder = data.downloadPage;
 
-          newlyUploaded.push({
+          uploadedList.push({
             n: file.name,
             s: file.size,
-            c: getCategory(file.name),
-            u: resultData.downloadPage
+            c: detectCategory(file.name),
+            u: data.downloadPage
           });
         }
 
-        // Adăugăm în lista organizată
-        uploadedItems = newlyUploaded;
-        selectedFiles = [];
-        renderQueue();
-        renderOrganizedVault();
+        activePackFiles = uploadedList;
+        currentPackTitle = titleInput.value.trim() || `Pachet (${uploadedList.length} fișiere)`;
+        stagingFiles = [];
+        renderStaging();
+        renderVault();
 
-        // Generăm Link-ul Unic (care conține toate fișierele aranjate pe categorii)
-        const packPayload = {
-          t: transferMessage.value.trim() || 'Pachet Transfer CloudDrop',
+        const payload = {
+          t: currentPackTitle,
           d: new Date().toLocaleDateString('ro-RO'),
-          f: cloudFolderPageUrl,
-          i: uploadedItems
+          f: currentCloudFolder,
+          i: activePackFiles
         };
 
-        const encoded = encodePackData(packPayload);
-        lastShareUrl = `${window.location.origin}${window.location.pathname}?pack=${encoded}`;
+        currentShareLink = `${window.location.origin}${window.location.pathname}?pack=${encodePayload(payload)}`;
+        shareLinkInput.value = currentShareLink;
 
-        generatedLinkInput.value = lastShareUrl;
         new QRious({
-          element: shareQrCanvas,
-          value: lastShareUrl,
+          element: qrCanvas,
+          value: currentShareLink,
           size: 160,
           level: 'M'
         });
 
-        uploadProgressBox.classList.add('hidden');
-        shareResultBox.classList.remove('hidden');
-        showToast('Upload finalizat cu succes! Link-ul și Mail-ul sunt gata.');
-
-        // Dacă utilizatorul a completat o adresă de email, deschidem direct fereastra de trimitere mail precompletată
-        const emailTo = recipientEmail.value.trim();
-        if (emailTo) {
-          triggerEmailClient(emailTo, packPayload.t, lastShareUrl, uploadedItems);
-        }
+        progressSection.classList.add('hidden');
+        sharePanel.classList.remove('hidden');
+        showToast('Pachetul este gata! Alege cum vrei să îl trimiți.');
 
       } catch (err) {
         console.error(err);
-        showToast('A apărut o eroare la upload. Încearcă din nou.');
-        uploadProgressBox.classList.add('hidden');
+        showToast('Eroare la încărcare. Verifică conexiunea și încearcă din nou.');
+        progressSection.classList.add('hidden');
       } finally {
         isUploading = false;
-        renderQueue();
+        renderStaging();
       }
     }
 
-    // --- TRIMITERE PE MAIL & WHATSAPP ---
-    function triggerEmailClient(email, title, link, items) {
-      const totalSize = items.reduce((acc, item) => acc + (item.s || 0), 0);
-      const fileNames = items.map(x => `• ${x.n} (${formatBytes(x.s)})`).join('\n');
-      
-      const subject = encodeURIComponent(`Ți-am trimis ${items.length} fișiere prin CloudDrop: ${title}`);
-      const body = encodeURIComponent(
-`Salut!
-
-Ți-am trimis un pachet de fișiere (${items.length} fișiere, total ${formatBytes(totalSize)}).
-
-👉 Apasă pe link-ul de mai jos pentru a le vedea sortate pe categorii și a le descărca la viteză maximă:
-${link}
-
-Fișiere incluse în pachet:
-${fileNames}
-
----
-Trimis prin CloudDrop High-Speed Transfer`
-      );
-
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    // --- CONSTRUIRE TEXT PENTRU EMAIL & WHATSAPP ---
+    function getFormattedShareText() {
+      const totalBytes = activePackFiles.reduce((acc, f) => acc + (f.s || 0), 0);
+      const listText = activePackFiles.map(f => `• ${f.n} (${formatSize(f.s)})`).join('\n');
+      return {
+        subject: `📦 CloudDrop: ${currentPackTitle} (${activePackFiles.length} fișiere)`,
+        body: `Salut!\n\nȚi-am trimis un pachet de fișiere: ${currentPackTitle}\nTotal: ${activePackFiles.length} fișiere (${formatSize(totalBytes)})\n\n👉 Deschide link-ul de mai jos pentru a le vedea sortate pe categorii (Video, Muzică, Imagini) și a le descărca:\n${currentShareLink}\n\nFișiere incluse:\n${listText}`
+      };
     }
 
-    sendEmailAppBtn.addEventListener('click', () => {
-      const emailTo = recipientEmail.value.trim();
-      const title = transferMessage.value.trim() || 'Fișierele tale';
-      triggerEmailClient(emailTo, title, lastShareUrl, uploadedItems);
+    // 1. Buton WhatsApp
+    whatsappBtn.addEventListener('click', () => {
+      if (!currentShareLink) return;
+      const totalBytes = activePackFiles.reduce((acc, f) => acc + (f.s || 0), 0);
+      const msg = `📦 *${currentPackTitle}*\n${activePackFiles.length} fișiere (${formatSize(totalBytes)})\n\n👉 Descarcă-le aranjate pe categorii aici:\n${currentShareLink}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     });
 
-    sendWhatsappBtn.addEventListener('click', () => {
-      const title = transferMessage.value.trim() || 'Pachet de fișiere';
-      const text = encodeURIComponent(`📦 *${title}* (${uploadedItems.length} fișiere)\nDescarcă-le aranjate pe categorii de aici:\n${lastShareUrl}`);
-      window.open(`https://wa.me/?text=${text}`, '_blank');
+    // 2. Buton Gmail Web (Funcționează 100% în browser pe orice laptop/PC)
+    gmailWebBtn.addEventListener('click', () => {
+      if (!currentShareLink) return;
+      const to = emailInput.value.trim();
+      const { subject, body } = getFormattedShareText();
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(gmailUrl, '_blank');
     });
 
-    copyShareLinkBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(lastShareUrl);
-      showToast('Link-ul a fost copiat în clipboard!');
+    // 3. Buton Aplicație Mail (Pentru Telefon sau Outlook/Apple Mail)
+    defaultMailBtn.addEventListener('click', () => {
+      if (!currentShareLink) return;
+      const to = emailInput.value.trim();
+      const { subject, body } = getFormattedShareText();
+      window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     });
 
-    // --- AFISARE FISIERE ORGANIZATE PE CATEGORII ---
-    function renderOrganizedVault() {
-      const counts = { all: uploadedItems.length, video: 0, audio: 0, image: 0, other: 0 };
-      uploadedItems.forEach(item => {
-        counts[item.c] = (counts[item.c] || 0) + 1;
+    // 4. Buton Share Nativ Telefon (iOS / Android Share Sheet)
+    nativeShareBtn.addEventListener('click', async () => {
+      if (!currentShareLink) return;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: currentPackTitle,
+            text: `Descarcă fișierele (${activePackFiles.length}) sortate pe categorii:`,
+            url: currentShareLink
+          });
+        } catch (e) {}
+      } else {
+        navigator.clipboard.writeText(currentShareLink);
+        showToast('Link-ul a fost copiat în clipboard!');
+      }
+    });
+
+    copyLinkBtn.addEventListener('click', () => {
+      if (!currentShareLink) return;
+      navigator.clipboard.writeText(currentShareLink);
+      showToast('Link-ul pachetului a fost copiat!');
+    });
+
+    // --- RANDARE DASHBOARD FISIERE PE CATEGORII ---
+    function renderVault() {
+      const counts = { all: activePackFiles.length, video: 0, audio: 0, image: 0, other: 0 };
+      activePackFiles.forEach(f => {
+        counts[f.c] = (counts[f.c] || 0) + 1;
       });
 
       Object.keys(counts).forEach(k => {
-        const badgeEl = document.getElementById(`count-${k}`);
-        if (badgeEl) badgeEl.textContent = counts[k];
+        const el = document.getElementById(`badge-${k}`);
+        if (el) el.textContent = counts[k];
       });
 
-      if (uploadedItems.length > 0) {
-        downloadAllBtn.classList.remove('hidden');
-        totalFilesBadge.textContent = uploadedItems.length;
-        if (cloudFolderPageUrl) {
-          directCloudFolderBtn.href = cloudFolderPageUrl;
-          directCloudFolderBtn.classList.remove('hidden');
+      if (activePackFiles.length > 0) {
+        searchBarWrap.classList.remove('hidden');
+        if (currentCloudFolder) {
+          cloudFolderBtn.href = currentCloudFolder;
+          cloudFolderBtn.classList.remove('hidden');
+          totalCountBadge.textContent = activePackFiles.length;
         }
       } else {
-        downloadAllBtn.classList.add('hidden');
-        directCloudFolderBtn.classList.add('hidden');
+        searchBarWrap.classList.add('hidden');
+        cloudFolderBtn.classList.add('hidden');
       }
 
-      const filtered = currentTab === 'all'
-        ? uploadedItems
-        : uploadedItems.filter(x => x.c === currentTab);
+      const filtered = activePackFiles.filter(f => {
+        const matchesCat = activeCategory === 'all' || f.c === activeCategory;
+        const matchesSearch = f.n.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCat && matchesSearch;
+      });
 
       if (filtered.length === 0) {
-        emptyVault.classList.remove('hidden');
-        filesGrid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        filesListContainer.classList.add('hidden');
         return;
       }
 
-      emptyVault.classList.add('hidden');
-      filesGrid.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      filesListContainer.classList.remove('hidden');
 
-      filesGrid.innerHTML = filtered.map(item => {
-        const b = getBadgeStyle(item.c);
+      filesListContainer.innerHTML = filtered.map(item => {
+        const m = getCategoryMeta(item.c);
         return `
-          <div class="bg-zinc-900/90 border border-white/10 rounded-xl p-3.5 flex items-center justify-between gap-3 hover:border-indigo-500/40 transition">
-            <div class="flex items-center gap-3 overflow-hidden">
-              <div class="p-2.5 rounded-xl border ${b.cls} shrink-0">
-                <i data-lucide="${b.icon}" class="w-5 h-5"></i>
+          <div class="glass-subtle hover:bg-white/[0.06] border border-white/10 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 transition group">
+            <div class="flex items-center gap-3.5 overflow-hidden">
+              <div class="w-11 h-11 rounded-2xl border ${m.badge} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <i data-lucide="${m.icon}" class="w-5 h-5"></i>
               </div>
               <div class="overflow-hidden">
-                <h3 class="text-sm font-semibold text-white truncate">${item.n}</h3>
-                <div class="flex items-center gap-2 mt-1 text-xs text-zinc-400">
-                  <span>${formatBytes(item.s)}</span>
+                <h3 class="text-xs sm:text-sm font-bold text-white truncate">${item.n}</h3>
+                <div class="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-zinc-400">
+                  <span class="font-semibold text-zinc-300">${formatSize(item.s)}</span>
                   <span>•</span>
-                  <span class="text-zinc-300 font-medium">${b.label}</span>
-                  <span>•</span>
-                  <span class="text-emerald-400">Descărcare Nelimitată</span>
+                  <span>${m.label}</span>
+                  <span class="hidden sm:inline">•</span>
+                  <span class="hidden sm:inline text-emerald-400 font-medium">Viteză Maximă</span>
                 </div>
               </div>
             </div>
 
-            <a href="${item.u}" target="_blank" rel="noopener" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 shadow-lg shadow-indigo-600/20 transition">
+            <a href="${item.u}" target="_blank" rel="noopener" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-lg shadow-indigo-600/25 transition active:scale-95">
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Descarcă</span>
             </a>
@@ -617,35 +772,39 @@ Trimis prin CloudDrop High-Speed Transfer`
       lucide.createIcons();
     }
 
-    // --- VERIFICARE DACA S-A DESCHIS LINK-UL DIN MAIL PE TELEFON (?pack=...) ---
-    function checkIncomingPackFromUrl() {
+    // --- CITIRE PACHET DIN LINK (CAND DESCHIZI PE TELEFON DIN MAIL/WHATSAPP) ---
+    function checkUrlPack() {
       const params = new URLSearchParams(window.location.search);
-      const packStr = params.get('pack');
-      if (!packStr) return;
+      const packParam = params.get('pack');
+      if (!packParam) return;
 
-      const decoded = decodePackData(packStr);
-      if (decoded && Array.isArray(decoded.i)) {
-        uploadedItems = decoded.i;
-        cloudFolderPageUrl = decoded.f || '';
+      const data = decodePayload(packParam);
+      if (data && Array.isArray(data.i)) {
+        activePackFiles = data.i;
+        currentCloudFolder = data.f || '';
+        currentPackTitle = data.t || 'Pachet Primit';
 
-        document.getElementById('packTitleDisplay').innerHTML = `
-          <i data-lucide="package-check" class="w-5 h-5 text-emerald-400"></i>
-          <span>${decoded.t || 'Pachet Primit'}</span>
-        `;
-        document.getElementById('packSubtitleDisplay').textContent = `Trimis pe ${decoded.d || 'azi'} • Apasă pe Descarcă pentru viteză maximă`;
-        document.getElementById('newTransferBtn').classList.remove('hidden');
+        // Activăm Bannerul de Primire sus de tot
+        receivedBanner.classList.remove('hidden');
+        resetAppBtn.classList.remove('hidden');
+        bannerTitle.textContent = currentPackTitle;
+        bannerMeta.textContent = `${activePackFiles.length} fișiere • Trimis pe ${data.d || 'azi'} • Aranjate pe categorii`;
 
-        // Pe mobil mutăm lista de descărcare prima sus ca să fie super ușor de apăsat
+        bannerDownloadAllBtn.onclick = () => {
+          if (currentCloudFolder) window.open(currentCloudFolder, '_blank');
+          else if (activePackFiles[0]) window.open(activePackFiles[0].u, '_blank');
+        };
+
+        // Pe telefon aducem lista de descărcare deasupra formularului de upload
         if (window.innerWidth < 1024) {
-          document.getElementById('uploadColumn').classList.add('order-2');
-          document.getElementById('vaultColumn').classList.add('order-1');
+          document.getElementById('rightColumn').classList.add('order-first');
         }
 
-        renderOrganizedVault();
+        renderVault();
       }
     }
 
-    // --- LISTENERS ---
+    // --- EVENT LISTENERS ---
     ['dragenter', 'dragover'].forEach(evt => {
       dropZone.addEventListener(evt, (e) => {
         e.preventDefault();
@@ -662,42 +821,37 @@ Trimis prin CloudDrop High-Speed Transfer`
 
     dropZone.addEventListener('drop', (e) => {
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        addFiles(e.dataTransfer.files);
+        addFilesToStaging(e.dataTransfer.files);
       }
     });
 
     fileInput.addEventListener('change', (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        addFiles(e.target.files);
+        addFilesToStaging(e.target.files);
         fileInput.value = '';
       }
     });
 
-    startUploadBtn.addEventListener('click', handleStartUpload);
+    uploadBtn.addEventListener('click', startUploadProcess);
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    document.querySelectorAll('.cat-tab').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => {
-          b.classList.remove('bg-indigo-600', 'text-white');
-          b.classList.add('bg-zinc-900/80', 'text-zinc-300');
+        document.querySelectorAll('.cat-tab').forEach(b => {
+          b.className = 'cat-tab px-4 py-2 rounded-xl text-xs font-bold glass-subtle hover:bg-white/10 text-zinc-300 transition flex items-center gap-2 shrink-0';
         });
-        btn.classList.remove('bg-zinc-900/80', 'text-zinc-300');
-        btn.classList.add('bg-indigo-600', 'text-white');
-        currentTab = btn.dataset.tab;
-        renderOrganizedVault();
+        btn.className = 'cat-tab px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition flex items-center gap-2 shrink-0 shadow-md shadow-indigo-600/25';
+        activeCategory = btn.dataset.cat;
+        renderVault();
       });
     });
 
-    downloadAllBtn.addEventListener('click', () => {
-      if (cloudFolderPageUrl) {
-        window.open(cloudFolderPageUrl, '_blank');
-      } else if (uploadedItems.length > 0) {
-        window.open(uploadedItems[0].u, '_blank');
-      }
+    searchFilesInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderVault();
     });
 
-    // Inițializare la deschiderea paginii
-    checkIncomingPackFromUrl();
+    // Pornire
+    checkUrlPack();
   </script>
 </body>
 </html>
